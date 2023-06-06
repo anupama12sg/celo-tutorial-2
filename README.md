@@ -5,8 +5,7 @@ an E-commercesmart contract using Hardhat as the development
 framework and Celo Alfajores Testnet as the blockchain network. We will use the provided smart
 contract called "Mundo" for the E-commerce functionality. 
 
-The tutorial assumes you have basic
-knowledge of Ethereum development and Solidity.
+The tutorial assumes you have basic development and Solidity.
 
 Prerequisites:
 
