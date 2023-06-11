@@ -1,32 +1,42 @@
-#  Build, Test, and Deploy a E-commerce smart contract using Hardhat on Celo Alfajores Testnet
+#  Build, Test & Deploy an E-Commerce Smart Contract using Hardhat on Celo Alfajores Testnet-
 
-In this tutorial, we will walk through the process of building, testing, and deploying
-an E-commercesmart contract using Hardhat as the development
-framework and Celo Alfajores Testnet as the blockchain network. We will use the provided smart
-contract called "Mundo" for the E-commerce functionality. 
+## Table of Contents:
 
-The tutorial assumes you have basic development and Solidity.
+- [Introduction](#introduction)
+- [Prerequisites](#prerequisites)
+- [Step 1: Set Up the Development Enviroment](#step-1-set-up-the-development-enviroment)
+- [Step 2: Create the Smart Contract](#step-2-create-the-smart-contract)
+- [Step 3: Write the Test File](#step-3-write-the-test-file)
+- [Step 4: Deploy the Mundo smart contract on Celo](#step-4-deploy-the-mundo-smart-contract-on-celo)
+- [Conclusion](#conclusion) 
 
-Prerequisites:
+## Introduction:
 
-- Basic knowledge of Ethereum development
-- Node.js and npm installed
-- Familiarity with JavaScript and Solidity
+In this tutorial, we will walk through the process of building, testing and deploying an E-commerce Smart Contract using Hardhat as the development
+framework and Celo Alfajores Testnet as the blockchain network. We will use the provided Smart Contract called "Mundo" for the E-commerce functionality. 
+The tutorial assumes you have basic development skills and knowledge about Solidity.
 
-## Step 1: Set Up the Development Environment
+## Prerequisites:
+
+- Knowledge of [Ethereum development](https://www.geeksforgeeks.org/what-is-ethereum/).
+- Install [Node.js](https://nodejs.org/en) and [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
+- Familiarity with [JavaScript](https://www.w3schools.com/js/DEFAULT.asp) and [Solidity](https://docs.soliditylang.org/en/v0.8.20/).
+
+## Step 1: Set Up the Development Environment-
 
 1. Create a new directory for your project and navigate to it using the command line.
-2. Initialize a new npm project by running the following command
+2. Initialize a new npm project by running the following command:
 
 ```bash
 npm init -y
-
 ```
+
 3. Install the required dependencies by running the following commands:
 
 ```bash
 npm install --save-dev hardhat @nomiclabs/hardhat-celo @nomiclabs/hardhat-web3 ethers chai @nomiclabs/hardhat-ethers dotenv
 ```
+
 4. Create a new file called hardhat.config.js in the project directory and add the following configuration:
 
 ```bash
@@ -51,17 +61,19 @@ module.exports = {
 This configuration file sets up the networks to be used with Hardhat, including the Celo network. It retrieves the necessary configuration values from the .env file, which we will set up in the next step.
 
 5. Create a new file named .env in the project root directory and add the following lines, replacing the placeholder values with your own:
+
 ```bash
 PRIVATE_KEY=<Your_private_key>
 ```
-Replace `<Your_private_key>` with your private key
 
-## Step 2: Create the Smart Contract
+Note: Replace `<Your_private_key>` with your private key.
 
-Create a new file called `Mundo.sol` in the contracts directory. This contract will provide basic functionality for listing items, buying items, and managing orders within an E-commerce store on the blockchain.
+## Step 2: Create the Smart Contract-
+
+Create a new file called `Mundo.sol` in the contracts directory. This contract will provide basic functionality for listing items, buying items and managing orders within an E-commerce store on the blockchain.
 
 ```solidity
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
 contract Mundo {
@@ -83,20 +95,20 @@ contract Mundo {
         Item item;
     }
 
-    mapping(uint256 => Item) public items;
-    mapping(address => mapping(uint256 => Order)) public orders;
-    mapping(address => uint256) public orderCount;
+    mapping(uint256 => Item) public items; // Mapping to store items with their IDs
+    mapping(address => mapping(uint256 => Order)) public orders; // Mapping to store orders for each user
+    mapping(address => uint256) public orderCount; // Mapping to keep track of the order count for each user
 
-    event Buy(address buyer, uint256 orderId, uint256 itemId);
-    event List(string name, uint256 cost, uint256 quantity);
+    event Buy(address buyer, uint256 orderId, uint256 itemId); // Event emitted when an item is purchased
+    event List(string name, uint256 cost, uint256 quantity); // Event emitted when an item is listed
 
     modifier onlyOwner() {
-        require(msg.sender == owner);
+        require(msg.sender == owner); // Modifier to restrict access to only the contract owner
         _;
     }
 
     constructor() {
-        owner = msg.sender;
+        owner = msg.sender; // Set the contract creator as the owner
     }
 
     function list(
@@ -133,48 +145,44 @@ contract Mundo {
         Item memory item = items[_id];
 
         // Require enough ether to buy item
-        require(msg.value >= item.cost);
+        require(msg.value >= item.cost); // Check if the value sent with the transaction is sufficient
 
         // Require item is in stock
-        require(item.stock > 0);
+        require(item.stock > 0); // Check if the item is in stock
 
         // Create order
         Order memory order = Order(block.timestamp, item);
 
         // Add order for user
-        orderCount[msg.sender]++; // <-- Order ID
-        orders[msg.sender][orderCount[msg.sender]] = order;
+        orderCount[msg.sender]++; // Increase the order count for the user
+        orders[msg.sender][orderCount[msg.sender]] = order; // Store the order details
 
         // Subtract stock
-        items[_id].stock = item.stock - 1;
+        items[_id].stock = item.stock - 1; // Decrease the item's stock
 
         // Emit event
         emit Buy(msg.sender, orderCount[msg.sender], item.id);
     }
 
     function withdraw() public onlyOwner {
-        (bool success, ) = owner.call{value: address(this).balance}("");
-        require(success);
+        (bool success, ) = owner.call{value: address(this).balance}(""); // Transfer the contract's balance to the owner
+        require(success); // Check if the transfer was successful
     }
 
-      // getters function
-    function getItem(uint256 itemId)
-        external
-        view
-        returns (Item memory)
-    {
-        return items[itemId];
+    // Getters function
+    function getItem(uint256 itemId) external view returns (Item memory) {
+        return items[itemId]; // Retrieve item details by its ID
     }
 }
 ```
 
  Let's go through the main components and functionality of this contract:
 
-1. **State Variables**
+1. **State Variables:**
 
 -  `owner`: Stores the address of the contract owner.
 
-2. **Structs**:
+2. **Structs:**
 
 `Item`: Represents an item in the E-commerce store. It consists of the following properties:
 
@@ -184,7 +192,7 @@ contract Mundo {
   - `image`: URL or IPFS hash of the item's image.
   - `cost`: Cost of the item in the network's native currency.
   - `rating`: Rating of the item.
-  -  `stock`: Quantity of the item available in stock.
+  - `stock`: Quantity of the item available in stock.
   - `description`: Description or details of the item.
   
 - `Order`: Represents an order placed by a buyer. It consists of the following properties:
@@ -192,33 +200,33 @@ contract Mundo {
    - `time`: Timestamp of when the order was created.
   - `item`: An instance of the `Item` struct representing the ordered item.
   
-3. **Mappings**:
+3. **Mappings:**:
 
 - `items`: Maps item IDs to their corresponding `Item` structs.
 - `orders`: Maps the buyer's address and order ID to the corresponding `Order` struct.
 - `orderCount`: Maps the buyer's address to the number of orders they have placed.
 
-3. **Events**:
+3. **Events:**
 
 - `Buy`: Triggered when a buyer successfully purchases an item. Emits the buyer's address, order ID, and item ID.
 - `List`: Triggered when a new item is listed in the store. Emits the item's name, cost, and quantity.
 
-4. **Modifiers**:
+4. **Modifiers:**
 
 - `onlyOwner`: A modifier that restricts the execution of a function to the contract owner.
 
-5. **Constructor**:
+5. **Constructor:**
 
 Initializes the `owner` variable with the address of the contract deployer.
 
-6. **Functions**:
+6. **Functions:**
 
 - `list`: Allows the contract owner to list a new item in the store. It takes the item details as parameters and adds the item to the `items` mapping. It also emits the `List` event.
 - `buy`: Allows a buyer to purchase an item. The buyer must send enough ether to cover the item's cost. It checks that the item is in stock, creates an order, and adds it to the `orders` mapping. It subtracts one from the item's stock and emits the`Buy` event.
 - `withdraw`: Allows the contract owner to withdraw the contract's balance. It transfers the contract's balance to the owner's address.
 - `getItem`: Retrieves the details of an item based on its ID. This function is marked as `external` and `view`, meaning it can be called from outside the contract and does not modify the contract state.
 
-## Step 3: Write the Test File
+## Step 3: Write the Test File-
 Open the test folder in the project directory and create a new file named Mundo.test.js. Add the following code:
 
 ```javascript
@@ -353,50 +361,53 @@ describe("Mundo", function () {
 
 Let's go through the code and understand the purpose of each section:
 
-1. **Import Statements**:
+1. **Import Statements:**
 
 - The necessary dependencies are imported, including `time` and `loadFixture` from `@nomicfoundation/hardhat-network-helpers`, `anyValue` from `@nomicfoundation/hardhat-chai-matchers/withArgs`, `expect` from `Chai`, and ethers from Hardhat.
 
-2. **Helper Function**:
+2. **Helper Function:**
 
 - The `tokens` function is defined to convert a numerical value into its equivalent representation in token units (wei).
 
-3. **Global Constants**
+3. **Global Constants:**
 
 - Several constants are declared to represent the details of an item, such as ID, name, category, image URL, cost, rating, and stock quantity.
 
-4. **Test Suite**:
+4. **Test Suite:**
 
 - The test suite is initiated using the `describe` function, encapsulating all the individual tests for the "Mundo" contract.
 
-5. **The beforeEach Hook**:
+5. **The beforeEach Hook:**
 
 - This hook is executed before each test case within the suite. It performs the following steps:
-  - Sets the `deployer` variable to the first signer retrieved from the available signers (in this case, the owner).
-  - Assigns a buyer's address to the `buyer` variable.
-  - Deploys the "Mundo" contract using the `Mundo` contract factory.
-6. **Deployment Test**:
+a) Sets the `deployer` variable to the first signer retrieved from the available signers (in this case, the owner).
+b) Assigns a buyer's address to the `buyer` variable.
+c) Deploys the "Mundo" contract using the `Mundo` contract factory.
+  
+6. **Deployment Test:**
 
 - This test case verifies that the contract owner is correctly set during deployment. It checks if the owner address matches the `deployer` address.
 
-7. **List Product** Test:
+7. **List Product Test:**
 
 - This test case checks the functionality of listing a product. It executes the following steps:
-  - Lists a product by calling the list function on the deployed contract using the deployer account.
-  - Verifies that the item attributes stored in the contract match the provided values.
-  - Confirms that the "List" event is emitted.
+a) Lists a product by calling the list function on the deployed contract using the deployer account.
+b) Verifies that the item attributes stored in the contract match the provided values.
+c) Confirms that the "List" event is emitted.
   
-8. **Buy Product** Test:
+8. **Buy Product Test:** 
 
 - This test case focuses on buying a product. It performs the following actions:
-  - Lists a product and ensures it is available for purchase.
-  - Buys the product using the `buy` function, sending the required amount of ether.
-  - Checks the following:
-    - Updates the buyer's order count and verifies that it equals 1.
-    - Adds the order to the contract and verifies the order's details.
-    - Updates the contract's balance by comparing it to the cost of the item.
-    - Confirms that the "Buy" event is emitted.
-9. **Withdrawing** Test:
+a) Lists a product and ensures it is available for purchase.
+b) Buys the product using the `buy` function, sending the required amount of ether.
+
+- Checks the following:
+a) Updates the buyer's order count and verifies that it equals one.
+b) Adds the order to the contract and verifies the order's details.
+c) Updates the contract's balance by comparing it to the cost of the item.
+d) Confirms that the "Buy" event is emitted.
+
+9. **Withdrawing Test:** 
 
 - This test case covers the withdrawal functionality. It executes the following steps:
   - Lists a product and buys it.
@@ -407,7 +418,7 @@ Let's go through the code and understand the purpose of each section:
     - Verifies that the contract's balance is now zero.
 These tests cover various aspects of the "Mundo" contract, including deployment, listing products, buying products, and withdrawing funds. They ensure that the contract functions as expected and provide an extra layer of confidence when working with the contract's functionality.
 
-## Step 4: Deploy the Mundo smart contract on Celo
+## Step 4: Deploy the Mundo smart contract on Celo-
 Open the scripts folder in the project directory and replace the code in the deploy.js file by the code below
 
 ```javascript
@@ -600,3 +611,7 @@ npx hardhat run --network alfajores scripts/deploy.js
  ```
  **Congratulations! You have successfully build , and deployed an E-commerce(`Mundo`)  smart contract with Hardhat on the Celo blockchain.**
  You can now interact with the contract using the generated artifacts and the deployed contract address.
+ 
+ ## Conclusion:
+ 
+ Therefore, building, testing and deploying an E-Commerce smart contract using Hardhat on the Celo Alfajores Testnet offers numerous advantages for developers and businesses. Hardhat provides a robust development environment with built-in tools and frameworks for Smart Contract development, making it easier to write, test and deploy Smart Contracts.
